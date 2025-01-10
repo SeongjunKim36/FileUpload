@@ -22,7 +22,7 @@ export class UsersService {
     }
 
     async updateUser(user: UserDto) {
-        return this._commandBus.execute(new UpdateUserCommand(user));
+        return this._commandBus.execute(new UpdateUserCommand(user.id, user));
     }
 
     async deleteUser(user: UserIdRequestParamsDto) {

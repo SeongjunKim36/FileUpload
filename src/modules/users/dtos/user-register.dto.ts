@@ -1,22 +1,18 @@
 'use strict';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
+import { IsString, IsEmail } from 'class-validator';
 
 export class UserRegisterDto {
     @IsString()
-    @IsNotEmpty()
     @ApiProperty()
-    readonly firstName: string;
+    firstName!: string;
 
     @IsString()
-    @IsNotEmpty()
     @ApiProperty()
-    readonly lastName: string;
+    lastName!: string;
 
-    @IsString()
     @IsEmail()
-    @IsNotEmpty()
     @ApiProperty()
-    readonly email: string;
+    email!: string;
 }

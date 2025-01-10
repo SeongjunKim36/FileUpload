@@ -1,78 +1,55 @@
-import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
-import {
-    NestExpressApplication,
-    ExpressAdapter,
-} from '@nestjs/platform-express';
-import rateLimit from 'express-rate-limit';
-import * as helmet from 'helmet'; // security feature
-import * as morgan from 'morgan'; // HTTP request logger
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as express from 'express';
 
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { ConfigService } from './shared/services/config.service';
-import { LoggerService } from './shared/services/logger.service';
-import { setupSwagger } from './shared/swagger/setup';
-import { SharedModule } from './shared.module';
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(
-        AppModule,
-        new ExpressAdapter(),
-        { cors: true },
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const configService = app.get(ConfigService);
+
+    // CORS 설정 수정
+    app.enableCors({
+        origin: true, // 모든 origin 허용
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
+
+    // uploads 디렉토리 정적 파일 제공
+    app.use('/uploads', express.static('uploads'));
+
+    // Swagger 설정
+    const config = new DocumentBuilder()
+        .setTitle(configService.get('SWAGGER_TITLE') || 'File Upload API')
+        .setDescription(
+            configService.get('SWAGGER_DESCRIPTION') ||
+                'File Upload Service API Documentation',
+        )
+        .setVersion(configService.get('SWAGGER_VERSION') || '1.0.0')
+        .addBearerAuth()
+        .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+
+    // Swagger UI 설정 수정
+    SwaggerModule.setup('api/docs', app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+            tryItOutEnabled: true,
+            displayRequestDuration: true,
+            filter: true,
+            withCredentials: true, // 추가
+        },
+    });
+
+    const port = configService.get('PORT') || 3000;
+    await app.listen(port);
+    console.log(`Application is running on: http://localhost:${port}`);
+    console.log(
+        `Swagger documentation is available at: http://localhost:${port}/api/docs`,
     );
-
-    const loggerService = app.select(SharedModule).get(LoggerService);
-    app.useLogger(loggerService);
-    app.use(
-        morgan('combined', {
-            stream: {
-                write: (message) => {
-                    loggerService.log(message);
-                },
-            },
-        }),
-    );
-
-    app.use(helmet());
-    app.use(
-        rateLimit({
-            windowMs: 15 * 60 * 1000, // 15 minutes
-            max: 100, // limit each IP to 100 requests per windowMs
-        }),
-    );
-
-    const reflector = app.get(Reflector);
-
-    app.useGlobalFilters(new HttpExceptionFilter(loggerService));
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            transform: true,
-            // exceptionFactory: errors => new BadRequestException(errors),
-            // dismissDefaultMessages: true,//TODO: disable in prod (if required)
-            validationError: {
-                target: false,
-            },
-        }),
-    );
-
-    const configService = app.select(SharedModule).get(ConfigService);
-
-    if (['development', 'staging'].includes(configService.nodeEnv)) {
-        setupSwagger(app, configService.swaggerConfig);
-    }
-
-    const port = configService.getNumber('PORT') || 3000;
-    const host = configService.get('HOST') || '127.0.0.1';
-    await app.listen(port, host);
-
-    loggerService.warn(`server running on port ${host}:${port}`);
-
-    /*
-     if GRPC is needed, import src/shared/grpc/setup.ts
-     await setupGrpc(app, 'role', 'role.proto', configService.services?.auth?.grpcPort || 7900);
-     */
 }
+
 bootstrap();

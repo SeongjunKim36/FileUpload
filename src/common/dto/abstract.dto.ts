@@ -1,15 +1,20 @@
 'use strict';
 
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class AbstractDto {
+export abstract class AbstractDto {
     @Expose()
     id!: string;
 
-    @Expose()
-    createdAt: Date;
+    @ApiProperty()
+    createdAt!: Date;
 
-    @Expose()
-    updatedAt: Date;
+    @ApiProperty()
+    updatedAt!: Date;
+
+    constructor() {
+        // 빈 생성자
+    }
 }

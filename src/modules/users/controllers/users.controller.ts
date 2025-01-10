@@ -1,16 +1,7 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Param,
-    Body,
-    Delete,
-    Put,
-    HttpStatus,
-} from '@nestjs/common';
+import { TypedRoute, TypedParam, TypedBody } from '@nestia/core';
+import { Controller, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 
-import { UserIdRequestParamsDto } from '../dtos/user-id-request-params.dto';
 import { UserRegisterDto } from '../dtos/user-register.dto';
 import { UserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
@@ -20,37 +11,36 @@ import { UsersService } from '../services/users.service';
 export class UsersController {
     constructor(private readonly _usersService: UsersService) {}
 
-    /* Create User */
+    @TypedRoute.Post()
     @ApiOperation({ summary: 'Create User' })
     @ApiResponse({ status: HttpStatus.CREATED, description: 'User Created.' })
-    @Post()
-    async createUser(@Body() userRegisterDto: UserRegisterDto) {
+    async createUser(@TypedBody() userRegisterDto: UserRegisterDto) {
         return this._usersService.createUser(userRegisterDto);
     }
 
     /* Update User */
     @ApiOperation({ summary: 'Update User' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Update User.' })
-    @Put(':id')
+    @TypedRoute.Put(':id')
     async updateUser(
-        @Param() id: UserIdRequestParamsDto,
-        @Body() userDto: UserDto,
+        @TypedParam('id') id: string,
+        @TypedBody() userDto: UserDto,
     ) {
-        return this._usersService.updateUser({ ...id, ...userDto });
+        return this._usersService.updateUser(userDto);
     }
 
     /* Delete User */
     @ApiOperation({ summary: 'Delete User' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Delete User.' })
-    @Delete(':id')
-    async deleteUser(@Param() id: UserIdRequestParamsDto) {
-        return this._usersService.deleteUser(id);
+    @TypedRoute.Delete(':id')
+    async deleteUser(@TypedParam('id') id: string) {
+        return this._usersService.deleteUser({ id });
     }
 
     /* Get users */
     @ApiOperation({ summary: 'List Users' })
     @ApiResponse({ status: HttpStatus.OK, description: 'List Users.' })
-    @Get()
+    @TypedRoute.Get()
     async findUsers(): Promise<UserDto[]> {
         return this._usersService.findUsers();
     }
@@ -58,8 +48,8 @@ export class UsersController {
     /* Get user*/
     @ApiOperation({ summary: 'Get User' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Get User.' })
-    @Get(':id')
-    async findOneUser(@Param() id: UserIdRequestParamsDto): Promise<UserDto> {
-        return this._usersService.findOneById(id);
+    @TypedRoute.Get(':id')
+    async findOneUser(@TypedParam('id') id: string): Promise<UserDto> {
+        return this._usersService.findOneById({ id });
     }
 }

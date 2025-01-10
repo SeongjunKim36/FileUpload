@@ -15,7 +15,10 @@ export class ConfigService {
 
         // Replace \\n with \n to support multiline strings in AWS
         for (const envName of Object.keys(process.env)) {
-            process.env[envName] = process.env[envName].replace(/\\n/g, '\n');
+            const value = process.env[envName];
+            if (value) {
+                process.env[envName] = value.replace(/\\n/g, '\n');
+            }
         }
         if (this.nodeEnv === 'development') {
             console.info(process.env);
@@ -23,7 +26,11 @@ export class ConfigService {
     }
 
     public get(key: string): string {
-        return process.env[key];
+        const value = process.env[key];
+        if (!value) {
+            throw new Error(`Config key "${key}" is undefined`);
+        }
+        return value;
     }
 
     public getNumber(key: string): number {
@@ -38,7 +45,7 @@ export class ConfigService {
         return {
             path: this.get('SWAGGER_PATH') || '/api/docs',
             title: this.get('SWAGGER_TITLE') || 'Demo Microservice API',
-            description: this.get('SWAGGER_DESCRIPTION'),
+            description: this.get('SWAGGER_DESCRIPTION') || 'API Documentation',
             version: this.get('SWAGGER_VERSION') || '0.0.1',
             scheme: this.get('SWAGGER_SCHEME') === 'https' ? 'https' : 'http',
         };

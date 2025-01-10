@@ -8,13 +8,13 @@ export function setupSwagger(
     config: ISwaggerConfigInterface,
 ) {
     const options = new DocumentBuilder()
-        .setTitle(config.title)
-        .setDescription(config.description)
-        .setVersion(config.version)
+        .setTitle(config.title || 'API')
+        .setDescription(config.description || 'API Description')
+        .setVersion(config.version || '1.0.0')
         .addBearerAuth()
         .addServer(`${config.scheme}://`)
         .build();
 
     const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup(config.path, app, document);
+    SwaggerModule.setup(config.path || '/api/docs', app, document);
 }

@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Repository, Entity } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,25 +16,39 @@ export class UserRepository extends Repository<User> {
         return user;
     }
 
-    async updateUser(userDto) {
-        await super.update({ id: userDto.id }, userDto);
-        const updatedUser = await super.findOne({ where: { id: userDto.id } });
-        updatedUser.update();
-        return updatedUser;
+    async updateUser(id: string, data: Partial<User>): Promise<User> {
+        const updatedUser = await this.findOne({ where: { id } });
+        if (!updatedUser) {
+            throw new NotFoundException('User not found');
+        }
+        Object.assign(updatedUser, data);
+        return this.save(updatedUser);
     }
 
     async deleteUser(userDto) {
-        // Todo
-        const user = await super.findOne({ where: { id: userDto.id } });
-        await super.delete({ id: userDto.id });
+        const user = await this.findOneBy({ id: userDto.id });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        await this.delete(userDto.id);
         user.delete();
         return user;
     }
 
     async welcomeUser(userDto) {
-        // Todo
-        const user = await super.findOne({ where: { id: userDto.id } });
+        const user = await this.findOneBy({ id: userDto.id });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
         user.welcome();
+        return user;
+    }
+
+    async getUser(id: string): Promise<User> {
+        const user = await this.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
         return user;
     }
 }

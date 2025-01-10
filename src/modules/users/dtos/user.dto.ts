@@ -9,7 +9,7 @@ export class UserDto extends AbstractDto {
     @Expose()
     @IsString()
     @ApiProperty()
-    readonly id!: string;
+    declare readonly id: string;
 
     @Expose()
     @IsString()
@@ -26,5 +26,5 @@ export class UserDto extends AbstractDto {
     @IsEmail()
     @IsNotEmpty()
     @ApiProperty()
-    readonly email: string;
+    readonly email!: string;
 }

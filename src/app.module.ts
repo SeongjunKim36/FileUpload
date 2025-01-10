@@ -1,41 +1,32 @@
 import './boilerplate.polyfill';
 import { Module } from '@nestjs/common';
-import { TerminusModule } from '@nestjs/terminus';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EventStoreCqrsModule } from 'nestjs-eventstore';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './modules/users/users.module';
-import { eventStoreBusConfig } from './providers/event-bus.provider';
-import { ConfigService } from './shared/services/config.service';
-import { SharedModule } from './shared.module';
+import { FileEntity } from './modules/files/entities/file.entity';
+import { FileModule } from './modules/files/files.module';
 
 @Module({
     imports: [
-        UsersModule,
-        TerminusModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
         TypeOrmModule.forRootAsync({
-            imports: [SharedModule],
-            useFactory: (configService: ConfigService) =>
-                configService.typeOrmConfig,
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                type: 'postgres',
+                host: configService.get('DB_HOST'),
+                port: 5432,
+                username: configService.get('DB_USERNAME'),
+                password: configService.get('DB_PASSWORD'),
+                database: configService.get('DB_DATABASE'),
+                entities: [FileEntity],
+                synchronize: configService.get('NODE_ENV') !== 'production',
+                logging: true,
+            }),
             inject: [ConfigService],
         }),
-        EventStoreCqrsModule.forRootAsync(
-            {
-                useFactory: async (config: ConfigService) => {
-                    return {
-                        connectionSettings:
-                            config.eventStoreConfig.connectionSettings,
-                        endpoint: config.eventStoreConfig.tcpEndpoint,
-                    };
-                },
-                inject: [ConfigService],
-            },
-            eventStoreBusConfig,
-        ),
+        FileModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
 })
 export class AppModule {}

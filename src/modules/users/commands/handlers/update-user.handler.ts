@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { ICommandHandler, CommandHandler } from '@nestjs/cqrs';
 import { EventPublisher } from 'nestjs-eventstore';
 
@@ -15,10 +15,19 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     async execute(command: UpdateUserCommand) {
         Logger.log('Async UpdateUserHandler...', 'UpdateUserCommand');
 
+        const user = await this._repository.findOne({
+            where: { id: command.userDto.id },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
         const { userDto } = command;
-        const user = this._publisher.mergeObjectContext(
-            await this._repository.updateUser(userDto),
+        const updatedUser = await this._repository.updateUser(
+            userDto.id,
+            userDto,
         );
-        user.commit();
+        this._publisher.mergeObjectContext(updatedUser);
+        updatedUser.commit();
     }
 }
