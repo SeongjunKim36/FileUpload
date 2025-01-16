@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 
 import { TypedFormData, TypedRoute, TypedParam } from '@nestia/core';
 import { Controller } from '@nestjs/common';
-import Multer from 'multer';
+import * as Multer from 'multer';
 
 import { FileMetadata } from '../interfaces/file-metadata.interface';
 import { IFileUpload } from '../interfaces/file-upload.interface';
