@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 
 import { AppModule } from './app.module';
@@ -20,21 +20,12 @@ async function bootstrap() {
   // uploads 디렉토리 정적 파일 제공
   app.use('/uploads', express.static('uploads'));
 
-  // Swagger 설정
-  const config = new DocumentBuilder()
-    .setTitle(configService.get('SWAGGER_TITLE') || 'File Upload API')
-    .setDescription(
-      configService.get('SWAGGER_DESCRIPTION') ||
-        'File Upload Service API Documentation',
-    )
-    .setVersion(configService.get('SWAGGER_VERSION') || '1.0.0')
-    .addBearerAuth()
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
+  const docs = await import(
+    `/Users/gpc/work/reviewing/FileUpload/swagger.json` as any
+  );
 
   // Swagger UI 설정 수정
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('api/docs', app, docs, {
     swaggerOptions: {
       persistAuthorization: true,
       tryItOutEnabled: true,
