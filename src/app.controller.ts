@@ -1,22 +1,18 @@
-import { Controller, Get, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, HttpStatus, HttpCode, Logger } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AppService } from './app.service';
-import { LoggerService } from './shared/services/logger.service';
 
 @Controller('/')
 @ApiTags('helloworld')
 export class AppController {
-  constructor(
-    private readonly _appService: AppService,
-    private readonly _logger: LoggerService,
-  ) {}
+  constructor(private readonly _appService: AppService) {}
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: HttpStatus.OK, description: 'Hello world' })
   getHello(): string {
-    this._logger.info('Hello Friend, world!');
+    Logger.log('Hello Friend, world!');
     return this._appService.getHello();
   }
 }
