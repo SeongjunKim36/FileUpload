@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { FileEntity } from '../entities/file.entity';
 import { FileMetadata } from '../interfaces/file-metadata.interface';
 import { IFileMetadataRepository } from '../interfaces/file-metadata.repository.interface';
@@ -10,7 +11,7 @@ import { StorageLocationType } from '../types/file-storage.types';
 export class FileMetadataRepository implements IFileMetadataRepository {
     constructor(
         @InjectRepository(FileEntity)
-        private readonly repository: Repository<FileEntity>
+        private readonly repository: Repository<FileEntity>,
     ) {}
 
     async save(metadata: FileMetadata): Promise<void> {
@@ -35,7 +36,7 @@ export class FileMetadataRepository implements IFileMetadataRepository {
         const { storageType, toDto, createdAt, updatedAt, ...rest } = entity;
         return {
             ...rest,
-            storageLocation: storageType
+            storageLocation: storageType,
         };
     }
-} 
+}

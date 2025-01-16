@@ -1,10 +1,10 @@
 import './boilerplate.polyfill';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER } from '@nestjs/core';
-import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { FileEntity } from './modules/files/entities/file.entity';
 import { FileModule } from './modules/files/files.module';
 

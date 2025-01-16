@@ -5,28 +5,28 @@ import { FileDto } from '../dtos/file.dto';
 
 @Entity({ name: 'files' })
 export class FileEntity extends AbstractEntity {
-    @Column()
-    originalName!: string;
+  @Column()
+  originalName!: string;
 
-    @Column()
-    mimeType!: string;
+  @Column()
+  mimeType!: string;
 
-    @Column()
-    size!: number;
+  @Column()
+  size!: number;
 
-    @Column()
-    path!: string;
+  @Column()
+  path!: string;
 
-    @Column()
-    storageType!: string;
+  @Column()
+  storageType!: string;
 
-    @Column()
-    uploadDate!: Date;
+  @Column()
+  uploadDate!: Date;
 
-    @Column({ nullable: true })
-    metadata?: string;
+  @Column({ nullable: true })
+  metadata?: string;
 
-    toDto(): FileDto {
-        return new FileDto(this);
-    }
+  toDto(): FileDto {
+    return new FileDto(this);
+  }
 }

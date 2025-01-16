@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
 import { StorageType } from '../enums/storage-type.enum';
 import { IFileStorage } from '../interfaces/file-storage.interface';
 
@@ -36,4 +37,4 @@ export class StorageStrategyService {
         }
         return storage;
     }
-} 
+}
