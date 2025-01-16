@@ -1,5 +1,9 @@
 import { INestiaConfig } from "@nestia/sdk";
+import { ConfigModule } from '@nestjs/config';
 
+ConfigModule.forRoot({
+    envFilePath: '.env.swagger'  // Swagger 전용 환경 설정 파일
+});
 const config: INestiaConfig = {
     input: {
         include: ["src/**/*.ts"],
@@ -23,6 +27,13 @@ const config: INestiaConfig = {
             version: "1.0.0",
             description: "File Upload Service API Documentation"
         },
+        // security: {
+        //     bearer: {
+        //         type: 'http',
+        //         scheme: 'bearer'
+        //     }
+        // },
+        // decompose: true,
     },
     primitive: false,
 };

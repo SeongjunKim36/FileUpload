@@ -20,8 +20,11 @@ export class FileEntity extends AbstractEntity {
     @Column()
     storageType!: string;
 
+    @Column()
+    uploadDate!: Date;
+
     @Column({ nullable: true })
-    metadata!: string;
+    metadata?: string;
 
     toDto(): FileDto {
         return new FileDto(this);

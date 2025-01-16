@@ -1,6 +1,6 @@
 'use strict';
 
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import { AbstractEntity } from './common/abstract.entity';
 import { AbstractDto } from './common/dto/abstract.dto';

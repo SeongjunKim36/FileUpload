@@ -2,11 +2,10 @@ import { Readable } from 'stream';
 
 import { TypedFormData, TypedRoute, TypedParam } from '@nestia/core';
 import { Controller } from '@nestjs/common';
-import Multer from 'multer';
-
-import { FileDto } from '../dtos/file.dto';
-import { IFileUpload } from '../interfaces/file-upload.interface';
+import Multer from "multer";
 import { FilesService } from '../services/files.service';
+import { FileMetadata } from '../interfaces/file-metadata.interface';
+import { IFileUpload } from '../interfaces/file-upload.interface';
 
 @Controller('files')
 export class FilesController {
@@ -15,40 +14,42 @@ export class FilesController {
     @TypedRoute.Post('upload')
     async uploadFile(
         @TypedFormData.Body(() => Multer()) input: IFileUpload,
-    ): Promise<{ id: string }> {
-        const uploadResult = await this.filesService.uploadFile(
-            input.uploadFile,
-            input.storageType,
-        );
-        return { id: uploadResult.id.toString() };
+    ): Promise<void> {
+        input;
+        // const uploadResult = await this.filesService.uploadFile(
+        //     input.files,
+        //     input.storageType,
+        
     }
 
     @TypedRoute.Get(':id/info')
-    async getFileInfo(@TypedParam('id') id: string): Promise<FileDto> {
-        return this.filesService.getFileInfo(id);
+    async getFileInfo(@TypedParam('id') id: string): Promise<FileMetadata | undefined> {
+        return this.filesService.getFileMetadata(id);
     }
 
     @TypedRoute.Get(':id/download')
     async downloadFile(@TypedParam('id') id: string): Promise<{
-        stream: NodeJS.ReadableStream;
+        stream: Readable;
         headers: {
             'Content-Type': string;
             'Content-Disposition': string;
             'Content-Length': number;
         };
     }> {
-        const file = await this.filesService.getFileInfo(id);
-        const fileBuffer = await this.filesService.getFileContent(id);
-        const fileStream = Readable.from(fileBuffer);
+        const metadata = await this.filesService.getFileMetadata(id);
+        if (!metadata) {
+            throw new Error('File not found');
+        }
 
-        const encodedFilename = encodeURIComponent(file.originalName);
+        const fileStream = await this.filesService.getFileStream(id);
+        const encodedFilename = encodeURIComponent(metadata.originalName);
 
         return {
             stream: fileStream,
             headers: {
-                'Content-Type': file.mimeType,
+                'Content-Type': metadata.mimeType,
                 'Content-Disposition': `attachment; filename*=UTF-8''${encodedFilename}`,
-                'Content-Length': file.size,
+                'Content-Length': metadata.size,
             },
         };
     }

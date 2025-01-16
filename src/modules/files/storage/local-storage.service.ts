@@ -1,9 +1,12 @@
 import * as fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
 
 import { Injectable } from '@nestjs/common';
 
 import { IFileStorage } from '../interfaces/file-storage.interface';
+import { Readable } from 'stream';
+import { FileMetadata } from '../interfaces/file-metadata.interface';
 
 @Injectable()
 export class LocalStorageService implements IFileStorage {
@@ -19,11 +22,32 @@ export class LocalStorageService implements IFileStorage {
         return filepath;
     }
 
-    async getFile(path: string): Promise<Buffer> {
-        return fs.readFile(path);
+    async getFile(metadata: FileMetadata): Promise<Readable> {
+        const buffer = await fs.readFile(metadata.path as string);
+        return Readable.from(buffer);
     }
 
     async deleteFile(path: string): Promise<void> {
         await fs.unlink(path);
+    }
+
+    async save(file: Readable, filename: string, metadata: Partial<FileMetadata>): Promise<FileMetadata> {
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        const filepath = path.join('uploads', `${uniqueSuffix}-${filename}`);
+
+        const writeStream = createWriteStream(filepath);
+        await new Promise((resolve, reject) => {
+            file.pipe(writeStream)
+               .on('finish', resolve)
+               .on('error', reject);
+        });
+
+        return {
+            ...metadata,
+            id: uniqueSuffix,
+            path: filepath,
+            storageLocation: 'local',
+            uploadDate: new Date(),
+        } as FileMetadata;
     }
 }

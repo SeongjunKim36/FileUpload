@@ -8,7 +8,7 @@ export class FileDto extends AbstractDto {
     size!: number;
     path!: string;
     storageType!: StorageType;
-    metadata!: string;
+    metadata?: string;
 
     constructor(file: FileEntity) {
         super();

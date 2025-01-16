@@ -1,5 +1,5 @@
 import cp from 'child_process';
-import * as express from 'express';
+import express from 'express';
 
 const execute = (command: string): void => {
   console.log(`\n$ ${command}\n`);
