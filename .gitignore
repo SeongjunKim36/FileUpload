@@ -395,3 +395,7 @@ docker-compose.yml
 dist
 logs
 data/
+
+.env
+uploads/
+swagger.json
