@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
 
@@ -21,7 +22,7 @@ async function bootstrap() {
   app.use('/uploads', express.static('uploads'));
 
   const docs = await import(
-    `/Users/gpc/work/reviewing/FileUpload/swagger.json` as any
+    join(process.cwd(), 'swagger.json') as any
   );
 
   // Swagger UI 설정 수정

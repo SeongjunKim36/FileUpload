@@ -2,11 +2,15 @@ import { createWriteStream } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Readable } from 'stream';
+import { v4 as uuidv4 } from 'uuid';
+import { stat } from 'fs/promises';
+import { createReadStream } from 'fs';
 
 import { Injectable } from '@nestjs/common';
 
 import { FileMetadata } from '../interfaces/file-metadata.interface';
 import { IFileStorage } from '../interfaces/file-storage.interface';
+import { extractMetadata } from '../utils/metadata-extractor';
 
 @Injectable()
 export class LocalStorageService implements IFileStorage {
@@ -36,20 +40,26 @@ export class LocalStorageService implements IFileStorage {
     filename: string,
     metadata: Partial<FileMetadata>,
   ): Promise<FileMetadata> {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const filepath = path.join('uploads', `${uniqueSuffix}-${filename}`);
+    const id = uuidv4();
+    const filepath = path.join('uploads', `${id}-${filename}`);
 
     const writeStream = createWriteStream(filepath);
     await new Promise((resolve, reject) => {
       file.pipe(writeStream).on('finish', resolve).on('error', reject);
     });
 
-    return {
-      ...metadata,
-      id: uniqueSuffix,
+    const stats = await stat(filepath);
+
+    const baseMetadata = {
+      id,
       path: filepath,
+      size: stats.size,
       storageLocation: 'local',
       uploadDate: new Date(),
+      ...metadata,
     } as FileMetadata;
+
+    const fileStream = createReadStream(filepath);
+    return extractMetadata(fileStream, baseMetadata);
   }
 }

@@ -1,11 +1,11 @@
 import { Readable } from 'stream';
 
-import { TypedFormData, TypedRoute, TypedParam } from '@nestia/core';
+import { TypedFormData, TypedRoute, TypedParam, TypedHeaders } from '@nestia/core';
 import { Controller } from '@nestjs/common';
 import * as Multer from 'multer';
 
 import { FileMetadata } from '../interfaces/file-metadata.interface';
-import { IFileUpload } from '../interfaces/file-upload.interface';
+import { IFileUpload, IUploadHeaders } from '../interfaces/file-upload.interface';
 import { FilesService } from '../services/files.service';
 
 @Controller('files')
@@ -14,13 +14,14 @@ export class FilesController {
 
   @TypedRoute.Post('upload')
   async uploadFile(
+    @TypedHeaders() headers: IUploadHeaders,
     @TypedFormData.Body(() => Multer()) input: IFileUpload,
   ): Promise<FileMetadata> {
     const uploadResult = await this.filesService.uploadFile(
       input.files,
       input.storageType,
+      headers['x-user-id'],
     );
-
     return uploadResult;
   }
 

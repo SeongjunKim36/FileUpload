@@ -9,13 +9,24 @@ import { FilesService } from './services/files.service';
 import { StorageStrategyService } from './services/storage-strategy.service';
 import { CloudStorage } from './storage/cloud-storage.service';
 import { LocalStorageService } from './storage/local-storage.service';
+import { UsersService } from '../users/services/user.service';
+import { UserEntity } from '../users/entities/user.entity';
+import { UserRepository } from '../users/repositories/user.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FileEntity]), ConfigModule],
+  imports: [
+    TypeOrmModule.forFeature([FileEntity, UserEntity]),
+    ConfigModule
+  ],
   controllers: [FilesController],
   providers: [
+    UsersService,
     FilesService,
     StorageStrategyService,
+    {
+      provide: 'IUserRepository',
+      useClass: UserRepository,
+    },
     {
       provide: 'IFileMetadataRepository',
       useClass: FileMetadataRepository,

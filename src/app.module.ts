@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { FileEntity } from './modules/files/entities/file.entity';
 import { FileModule } from './modules/files/files.module';
+import { UserEntity } from './modules/users/entities/user.entity';
 
 @Module({
     imports: [
@@ -22,12 +23,13 @@ import { FileModule } from './modules/files/files.module';
                 username: configService.get('DB_USERNAME'),
                 password: configService.get('DB_PASSWORD'),
                 database: configService.get('DB_DATABASE'),
-                entities: [FileEntity],
+                entities: [FileEntity, UserEntity],
                 synchronize: configService.get('NODE_ENV') !== 'production',
                 logging: true,
             }),
             inject: [ConfigService],
         }),
+        TypeOrmModule.forFeature([UserEntity]),
         FileModule,
     ],
     providers: [
